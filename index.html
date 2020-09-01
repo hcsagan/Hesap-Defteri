@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js" integrity="sha256-R7aNzoy2gFrVs+pNJ6+SokH04ppcEqJ0yFLkNGoFALQ=" crossorigin="anonymous"></script>
+	<title>Gider Hesaplama</title>
+	<style>
+		*{
+			outline:none;
+		}
+		#sonuclar span{
+			padding-left:20px;
+		}
+		input{
+			padding:8px;
+			margin-right:20px;
+		}
+		button{
+			padding:8px 12px;
+		}
+		#sonuclar{
+			padding:20px;
+		}
+		button.undo{
+			padding:4px 8px;
+		}
+		li{
+			color:#999;
+		}
+		#select{
+			margin:10px 0;
+		}
+		#select button{
+			color:#333;
+			margin-right:4px;
+			border-radius:0;
+			border:1px solid #ccc;
+			background-color:#ee7;
+			transition: background-color ease .2s;
+		}
+		#select button:hover{
+			background-color: #ed6;
+		}
+		#select button:active{
+			background-color: #e96;
+		}
+	</style>
+</head>
+<body>
+	<div id="form">
+		<input type="number" id="miktar" placeholder="Fiyat"><input type="text" placeholder="Tür" id="tur"><button id="ekle">Ekle</button>
+		<button id="temizle">Temizle</button>
+		<div id="select">
+		</div>
+	</div>
+	<div id="sonuclar">
+	</div>
+	<div id="sonislem">
+		<ul>
+
+		</ul>
+	</div>
+	<script>
+		$(document).ready(function(){
+			var columns = 0;
+			var sayac = [];
+			var heads = [];
+			var total = 0;
+			//add menu item
+			$("#ekle").click(function(){
+				if($("#tur").val() == "" || $("#tur").val() == null){
+					alert("Doğru değer giriniz!");
+				}else{
+					$("#select").append('<button class="artir" col="'+columns+'">'+$("#tur").val()+'</button>');
+					sayac[columns] = 0;
+					heads[columns] = $("#tur").val();
+					$("#sonuclar").append('<div><strong>'+heads[columns]+':</strong><span col="'+columns+'">'+sayac[columns]+'</span> TL</div>');
+					columns++;
+				}
+					$("#tur").val("").focus();
+					if($("#toplam").text()=="") $("#sonuclar").prepend('<div><strong>TOPLAM: <span id="toplam">'+total+'</span> ₺</strong></div>')
+			});
+			//increment
+			$(".artir").live("click",function(){
+				if(parseFloat($("#miktar").val())){
+					col = $(this).attr("col");
+					sayac[col]+=parseFloat($("#miktar").val().replace(",","."))*100;
+					$("span[col="+col+"]").text(yaz(sayac[col]));
+					islem = heads[col]+" "+yaz(parseFloat($("#miktar").val().replace(",","."))*100)+" artirildi. <button class='undo' col='"+col+"' amount='"+parseFloat($("#miktar").val().replace(",","."))*100+"'>Geri Al</button>";
+					$("#sonislem ul").prepend('<li>'+islem+'</li>')
+					$("#miktar").val("").focus();
+					calc();
+				}else{
+					alert("Doğru değer giriniz!");
+					$("#miktar").val("").focus();
+				}
+			});
+			//undo
+			$(".undo").live("click", function(){
+				col = $(this).attr("col");
+				amt = $(this).attr("amount");
+				sayac[col]-=parseFloat(amt);
+				$("span[col="+col+"]").text(yaz(sayac[col]));
+				$(this).parent().remove();
+			});
+			//convert to float
+			$("#temizle").click(function(){
+				sayac.forEach(function(a){
+					a=0;
+					total=0;
+				});
+				$("#sonuclar").html('<div><strong>TOPLAM: <span id="toplam">'+total+'</span> ₺</strong></div>');
+				for(a=0;a<columns;a++){
+					sayac[a]=0;
+					$("#sonuclar").append('<div><strong>'+heads[a]+':</strong><span col="'+a+'">'+sayac[a]+'</span> TL</div>');
+				}
+				$("#sonislem ul").html("");
+			});
+			function yaz(a){
+				a = a.toString();
+				return a.substr(0,a.length-2)+","+a.substr(a.length-2, a.length);
+			}
+			function calc(){
+				var top=0;
+				for(i=0;i<sayac.length;i++){
+					top = top+sayac[i];
+					console.log(top)
+				}
+				$("#toplam").text(top/100);
+			}
+		})
+	</script>
+</body>
+</html>
